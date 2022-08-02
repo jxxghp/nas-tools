@@ -784,12 +784,12 @@ def update_site_user_statistics(site_user_infos: list):
     if not site_user_infos:
         return
     update_at = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    sql = "INSERT OR REPLACE INTO SITE_USER_STATISTICS(SITE, USERNAME, USER_LEVEL," \
+    sql = "INSERT OR REPLACE INTO SITE_USER_INFO_STATISTICS(SITE, USERNAME, USER_LEVEL," \
           " JOIN_AT, UPDATE_AT," \
           " UPLOAD, DOWNLOAD, RATIO," \
           " SEEDING, LEECHING, SEEDING_SIZE," \
           " BONUS," \
-          " URL) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          " URL, FAVICON) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     data_list = []
 
@@ -806,10 +806,11 @@ def update_site_user_statistics(site_user_infos: list):
         leeching = site_user_info.leeching
         bonus = site_user_info.bonus
         url = site_user_info.site_url
+        favicon = site_user_info.site_favicon
 
         data_list.append((
             str_sql(site), username, user_level, join_at, update_at, upload, download, ratio, seeding, leeching,
-            seeding_size, bonus, url))
+            seeding_size, bonus, url, favicon))
     return update_by_sql_batch(sql, data_list)
 
 
@@ -834,7 +835,7 @@ def update_site_seed_info(site_user_infos: list):
 def is_site_user_statistics_exists(url):
     if not url:
         return False
-    sql = "SELECT COUNT(1) FROM SITE_USER_STATISTICS WHERE URL = ? "
+    sql = "SELECT COUNT(1) FROM SITE_USER_INFO_STATISTICS WHERE URL = ? "
     ret = select_by_sql(sql, (url,))
     if ret and ret[0][0] > 0:
         return True
@@ -851,15 +852,15 @@ def get_site_user_statistics(num=100, strict_urls=None):
           " JOIN_AT, UPDATE_AT," \
           " UPLOAD, DOWNLOAD, RATIO," \
           " SEEDING, LEECHING, SEEDING_SIZE," \
-          " BONUS, URL" \
-          " FROM SITE_USER_STATISTICS LIMIT ?"
+          " BONUS, URL, FAVICON" \
+          " FROM SITE_USER_INFO_STATISTICS LIMIT ?"
     if strict_urls:
         sql = "SELECT SITE, USERNAME, USER_LEVEL," \
               " JOIN_AT, UPDATE_AT," \
               " UPLOAD, DOWNLOAD, RATIO," \
               " SEEDING, LEECHING, SEEDING_SIZE," \
-              " BONUS, URL" \
-              " FROM SITE_USER_STATISTICS WHERE URL in {} LIMIT ?".format(tuple(strict_urls + ["__DUMMY__"]))
+              " BONUS, URL, FAVICON" \
+              " FROM SITE_USER_INFO_STATISTICS WHERE URL in {} LIMIT ?".format(tuple(strict_urls + ["__DUMMY__"]))
 
     return select_by_sql(sql, (num,))
 

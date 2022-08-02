@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 from urllib.parse import urljoin, urlsplit
 
 import requests
+from lxml import etree
 
 from utils.http_utils import RequestUtils
 
@@ -18,6 +19,7 @@ class ISiteUserInfo(metaclass=ABCMeta):
         # 站点信息
         self.site_name = None
         self.site_url = None
+        self.site_favicon = None
         # 用户信息
         self.username = None
         self.userid = None
@@ -64,6 +66,7 @@ class ISiteUserInfo(metaclass=ABCMeta):
         self.site_name = site_name
         self.site_url = url
         self._base_url = f"{split_url.scheme}://{split_url.netloc}"
+        self.site_favicon = urljoin(self._base_url, "favicon.ico")
         self._site_cookie = site_cookie
         self._index_html = index_html
         self._session = session if session else requests.Session()
@@ -80,6 +83,7 @@ class ISiteUserInfo(metaclass=ABCMeta):
         解析站点信息
         :return:
         """
+        self._parse_favicon(self._index_html)
         self._parse_site_page(self._index_html)
         self._parse_user_base_info(self._index_html)
         if self._user_traffic_page:
@@ -114,6 +118,20 @@ class ISiteUserInfo(metaclass=ABCMeta):
         处理掉HTML中的干扰部分
         """
         return re.sub(r"#\d+", "", re.sub(r"\d+px", "", html_text))
+
+    def _parse_favicon(self, html_text):
+        """
+        解析站点favicon地址，head link中指定地址，使用指定，否则用默认
+        :param html_text:
+        :return:
+        """
+        html = etree.HTML(html_text)
+        if not html:
+            return
+
+        fav_link = html.xpath('//head/link[@rel = "shortcut icon"]/@href')
+        if fav_link:
+            self.site_favicon = urljoin(self._base_url, fav_link[0])
 
     def _get_page_content(self, url, params=None):
         """

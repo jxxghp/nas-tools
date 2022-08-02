@@ -228,7 +228,7 @@ class DBHelper:
                 '''CREATE UNIQUE INDEX IF NOT EXISTS UN_INDX_SITE_USER_SEEDING_INFO_URL ON SITE_USER_SEEDING_INFO (URL);''')
 
             # 实时站点数据
-            cursor.execute('''CREATE TABLE IF NOT EXISTS SITE_USER_STATISTICS
+            cursor.execute('''CREATE TABLE IF NOT EXISTS SITE_USER_INFO_STATISTICS
                                    (ID INTEGER PRIMARY KEY AUTOINCREMENT     NOT NULL,
                                    SITE    TEXT,
                                    USERNAME    TEXT,
@@ -242,14 +242,15 @@ class DBHelper:
                                    LEECHING     INTEGER,
                                    SEEDING_SIZE     INTEGER,
                                    BONUS     REAL,
-                                   URL     TEXT);''')
+                                   URL     TEXT,
+                                   FAVICON TEXT);''')
             cursor.execute(
-                '''CREATE INDEX IF NOT EXISTS INDX_SITE_USER_STATISTICS_URL ON SITE_USER_STATISTICS (URL);''')
+                '''CREATE INDEX IF NOT EXISTS INDX_SITE_USER_INFO_STATISTICS_URL ON SITE_USER_INFO_STATISTICS (URL);''')
             cursor.execute(
-                '''CREATE INDEX IF NOT EXISTS INDX_SITE_USER_STATISTICS_SITE ON SITE_USER_STATISTICS (SITE);''')
+                '''CREATE INDEX IF NOT EXISTS INDX_SITE_USER_INFO_STATISTICS_SITE ON SITE_USER_INFO_STATISTICS (SITE);''')
             # 唯一约束
             cursor.execute(
-                '''CREATE UNIQUE INDEX IF NOT EXISTS UN_INDX_SITE_USER_STATISTICS_URL ON SITE_USER_STATISTICS (URL);''')
+                '''CREATE UNIQUE INDEX IF NOT EXISTS UN_INDX_SITE_USER_INFO_STATISTICS_URL ON SITE_USER_INFO_STATISTICS (URL);''')
             # 下载历史
             cursor.execute('''CREATE TABLE IF NOT EXISTS DOWNLOAD_HISTORY
                                    (ID INTEGER PRIMARY KEY AUTOINCREMENT     NOT NULL,
@@ -319,11 +320,11 @@ class DBHelper:
 
     def __cleardata(self):
         self.excute(
-                """DELETE FROM SITE_USER_STATISTICS 
+                """DELETE FROM SITE_USER_INFO_STATISTICS 
                     WHERE EXISTS (SELECT 1 
-                        FROM SITE_USER_STATISTICS p2 
-                        WHERE SITE_USER_STATISTICS.URL = p2.URL 
-                        AND SITE_USER_STATISTICS.rowid < p2.rowid);""")
+                        FROM SITE_USER_INFO_STATISTICS p2 
+                        WHERE SITE_USER_INFO_STATISTICS.URL = p2.URL 
+                        AND SITE_USER_INFO_STATISTICS.rowid < p2.rowid);""")
         self.excute(
                 """DELETE FROM SITE_STATISTICS_HISTORY 
                     WHERE EXISTS (SELECT 1 
